@@ -17,6 +17,7 @@ export default {
         border: '#e5e7eb',
         background: '#f3f4f6',
         foreground: '#111827',
+        ring: '#3b82f6',
       }
     },
   },
