@@ -13,6 +13,110 @@ const defaultCategories: Category[] = [
   { id: '6', name: 'Other', color: 'bg-gray-500', count: 0 },
 ];
 
+// Sample dummy data
+const dummyDocuments: Document[] = [
+  {
+    id: '1',
+    name: 'Project Proposal.pdf',
+    type: 'application/pdf',
+    size: 2048576, // 2MB
+    uploadDate: new Date('2024-01-15'),
+    category: 'Documents',
+    tags: ['proposal', 'project'],
+    url: 'https://example.com/project-proposal.pdf'
+  },
+  {
+    id: '2',
+    name: 'Team Photo.jpg',
+    type: 'image/jpeg',
+    size: 1536000, // 1.5MB
+    uploadDate: new Date('2024-01-14'),
+    category: 'Images',
+    tags: ['team', 'photo'],
+    url: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg'
+  },
+  {
+    id: '3',
+    name: 'Presentation.pptx',
+    type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    size: 5242880, // 5MB
+    uploadDate: new Date('2024-01-13'),
+    category: 'Documents',
+    tags: ['presentation', 'slides'],
+    url: 'https://example.com/presentation.pptx'
+  },
+  {
+    id: '4',
+    name: 'Meeting Recording.mp4',
+    type: 'video/mp4',
+    size: 15728640, // 15MB
+    uploadDate: new Date('2024-01-12'),
+    category: 'Videos',
+    tags: ['meeting', 'recording'],
+    url: 'https://example.com/meeting-recording.mp4'
+  },
+  {
+    id: '5',
+    name: 'Budget Spreadsheet.xlsx',
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    size: 1048576, // 1MB
+    uploadDate: new Date('2024-01-11'),
+    category: 'Documents',
+    tags: ['budget', 'finance'],
+    url: 'https://example.com/budget.xlsx'
+  },
+  {
+    id: '6',
+    name: 'Logo Design.png',
+    type: 'image/png',
+    size: 512000, // 500KB
+    uploadDate: new Date('2024-01-10'),
+    category: 'Images',
+    tags: ['logo', 'design'],
+    url: 'https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg'
+  },
+  {
+    id: '7',
+    name: 'Audio Notes.mp3',
+    type: 'audio/mpeg',
+    size: 3145728, // 3MB
+    uploadDate: new Date('2024-01-09'),
+    category: 'Audio',
+    tags: ['notes', 'audio'],
+    url: 'https://example.com/audio-notes.mp3'
+  },
+  {
+    id: '8',
+    name: 'Project Archive.zip',
+    type: 'application/zip',
+    size: 10485760, // 10MB
+    uploadDate: new Date('2024-01-08'),
+    category: 'Archives',
+    tags: ['archive', 'backup'],
+    url: 'https://example.com/project-archive.zip'
+  },
+  {
+    id: '9',
+    name: 'Contract.pdf',
+    type: 'application/pdf',
+    size: 768000, // 750KB
+    uploadDate: new Date('2024-01-07'),
+    category: 'Documents',
+    tags: ['contract', 'legal'],
+    url: 'https://example.com/contract.pdf'
+  },
+  {
+    id: '10',
+    name: 'Product Demo.mp4',
+    type: 'video/mp4',
+    size: 25165824, // 24MB
+    uploadDate: new Date('2024-01-06'),
+    category: 'Videos',
+    tags: ['demo', 'product'],
+    url: 'https://example.com/product-demo.mp4'
+  }
+];
+
 export const useDocuments = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [categories, setCategories] = useState<Category[]>(defaultCategories);
@@ -27,6 +131,9 @@ export const useDocuments = () => {
         uploadDate: new Date(doc.uploadDate)
       }));
       setDocuments(parsedDocs);
+    } else {
+      // Load dummy data if no saved documents exist
+      setDocuments(dummyDocuments);
     }
     
     if (savedCategories) {
