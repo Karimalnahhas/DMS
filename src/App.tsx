@@ -6,6 +6,7 @@ import { UploadModal } from './components/UploadModal';
 import { DocumentViewer } from './components/DocumentViewer';
 import { useDocuments } from './hooks/useDocuments';
 import { getFileCategory } from './utils/fileUtils';
+import { getProjectById, generateProjectTags } from './utils/projectDetection';
 import { Document } from './types/document';
 
 function App() {
@@ -25,18 +26,55 @@ function App() {
     });
   }, [documents, searchTerm, selectedCategory]);
 
-  const handleFileUpload = (files: FileList) => {
-    Array.from(files).forEach(file => {
+  const handleFileUpload = (files: FileList, projectAssignments: { [key: string]: string }) => {
+    Array.from(files).forEach((file, index) => {
       // Create a mock URL for demo purposes
       const url = URL.createObjectURL(file);
+      
+      // Get project assignment
+      const projectId = projectAssignments[index.toString()];
+      const project = projectId ? getProjectById(projectId) : null;
+      
+      // Generate tags based on file and project
+      let tags: string[] = [];
+      
+      // Add basic tags from filename
+      const baseFileName = file.name.replace(/\.[^/.]+$/, '').toLowerCase();
+      const basicTags = baseFileName
+        .split(/[-_\s]+/)
+        .filter(tag => tag.length > 2)
+        .slice(0, 3); // Limit to 3 basic tags
+      
+      tags.push(...basicTags);
+      
+      // Add project-specific tags if assigned
+      if (project) {
+        const projectTags = generateProjectTags(project);
+        tags.push(...projectTags);
+      }
+      
+      // Add category-based tags
+      const category = getFileCategory(file.type);
+      if (category === 'Technical Drawings') {
+        tags.push('cad', 'design');
+      } else if (category === 'Reports') {
+        tags.push('analysis', 'documentation');
+      } else if (category === 'Safety Documents') {
+        tags.push('safety', 'compliance');
+      }
+      
+      // Remove duplicates and limit total tags
+      tags = [...new Set(tags)].slice(0, 6);
       
       addDocument({
         name: file.name,
         type: file.type,
         size: file.size,
-        category: getFileCategory(file.type),
-        tags: [],
+        category,
+        tags,
         url,
+        projectId: project?.id,
+        projectName: project?.name,
       });
     });
   };

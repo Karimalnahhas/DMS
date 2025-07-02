@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Document, Category } from '../types/document';
+import { projects, updateProjectDocumentCount } from '../utils/projectDetection';
 
 const STORAGE_KEY = 'dms_documents';
 const CATEGORIES_KEY = 'dms_categories';
@@ -17,44 +18,208 @@ const defaultCategories: Category[] = [
   { id: '10', name: 'Photos & Media', color: 'bg-cyan-500', count: 0 },
 ];
 
-// Comprehensive dummy data for HS Group construction and consultancy projects
+// Enhanced dummy data with project assignments
 const dummyDocuments: Document[] = [
   // Dubai Marina Tower Project
   {
     id: '1',
     name: 'Dubai Marina Tower - Master Plan.pdf',
     type: 'application/pdf',
-    size: 15728640, // 15MB
+    size: 15728640,
     uploadDate: new Date('2024-01-20'),
     category: 'Project Plans',
-    tags: ['dubai', 'marina', 'tower', 'master-plan', 'residential'],
-    url: 'https://example.com/dubai-marina-master-plan.pdf'
+    tags: ['dubai', 'marina', 'tower', 'master-plan', 'residential', 'dmt-2024'],
+    url: 'https://example.com/dubai-marina-master-plan.pdf',
+    projectId: 'proj-001',
+    projectName: 'Dubai Marina Tower'
   },
   {
     id: '2',
     name: 'Structural Engineering Report - Tower Foundation.pdf',
     type: 'application/pdf',
-    size: 8388608, // 8MB
+    size: 8388608,
     uploadDate: new Date('2024-01-19'),
     category: 'Reports',
-    tags: ['structural', 'foundation', 'engineering', 'dubai', 'tower'],
-    url: 'https://example.com/structural-report.pdf'
+    tags: ['structural', 'foundation', 'engineering', 'dubai', 'tower', 'dmt-2024'],
+    url: 'https://example.com/structural-report.pdf',
+    projectId: 'proj-001',
+    projectName: 'Dubai Marina Tower'
   },
   {
     id: '3',
     name: 'Architectural Drawings - Floor Plans.dwg',
     type: 'application/acad',
-    size: 25165824, // 24MB
+    size: 25165824,
     uploadDate: new Date('2024-01-18'),
     category: 'Technical Drawings',
-    tags: ['architectural', 'floor-plans', 'autocad', 'residential'],
-    url: 'https://example.com/floor-plans.dwg'
+    tags: ['architectural', 'floor-plans', 'autocad', 'residential', 'dmt-2024'],
+    url: 'https://example.com/floor-plans.dwg',
+    projectId: 'proj-001',
+    projectName: 'Dubai Marina Tower'
   },
+  
+  // Riyadh Business District Project
+  {
+    id: '6',
+    name: 'Riyadh Business District - Feasibility Study.pdf',
+    type: 'application/pdf',
+    size: 12582912,
+    uploadDate: new Date('2024-01-15'),
+    category: 'Reports',
+    tags: ['riyadh', 'business-district', 'feasibility', 'commercial', 'rbd-2024'],
+    url: 'https://example.com/feasibility-study.pdf',
+    projectId: 'proj-002',
+    projectName: 'Riyadh Business District'
+  },
+  {
+    id: '7',
+    name: 'MEP Systems Design - HVAC Layout.pdf',
+    type: 'application/pdf',
+    size: 18874368,
+    uploadDate: new Date('2024-01-14'),
+    category: 'Technical Drawings',
+    tags: ['mep', 'hvac', 'mechanical', 'electrical', 'plumbing', 'rbd-2024'],
+    url: 'https://example.com/mep-design.pdf',
+    projectId: 'proj-002',
+    projectName: 'Riyadh Business District'
+  },
+  
+  // Cairo Metro Extension Project
+  {
+    id: '11',
+    name: 'Cairo Metro Line 4 - Environmental Impact Assessment.pdf',
+    type: 'application/pdf',
+    size: 20971520,
+    uploadDate: new Date('2024-01-10'),
+    category: 'Reports',
+    tags: ['cairo', 'metro', 'environmental', 'impact', 'assessment', 'cme-2024'],
+    url: 'https://example.com/environmental-impact.pdf',
+    projectId: 'proj-003',
+    projectName: 'Cairo Metro Extension'
+  },
+  {
+    id: '12',
+    name: 'Tunnel Boring Machine Specifications.pdf',
+    type: 'application/pdf',
+    size: 7340032,
+    uploadDate: new Date('2024-01-09'),
+    category: 'Specifications',
+    tags: ['tunnel', 'boring', 'machine', 'specifications', 'metro', 'cme-2024'],
+    url: 'https://example.com/tbm-specs.pdf',
+    projectId: 'proj-003',
+    projectName: 'Cairo Metro Extension'
+  },
+  
+  // Kuwait Oil Refinery Project
+  {
+    id: '16',
+    name: 'Oil Refinery Modernization - Process Flow Diagram.pdf',
+    type: 'application/pdf',
+    size: 31457280,
+    uploadDate: new Date('2024-01-05'),
+    category: 'Technical Drawings',
+    tags: ['oil', 'refinery', 'process', 'flow', 'diagram', 'kuwait', 'kor-2024'],
+    url: 'https://example.com/process-flow.pdf',
+    projectId: 'proj-004',
+    projectName: 'Kuwait Oil Refinery'
+  },
+  {
+    id: '17',
+    name: 'HSE Risk Assessment - Chemical Handling.pdf',
+    type: 'application/pdf',
+    size: 6291456,
+    uploadDate: new Date('2024-01-04'),
+    category: 'Safety Documents',
+    tags: ['hse', 'risk', 'assessment', 'chemical', 'handling', 'safety', 'kor-2024'],
+    url: 'https://example.com/hse-risk-assessment.pdf',
+    projectId: 'proj-004',
+    projectName: 'Kuwait Oil Refinery'
+  },
+  
+  // Doha Airport Terminal Project
+  {
+    id: '21',
+    name: 'Airport Terminal - Structural Steel Drawings.dwg',
+    type: 'application/acad',
+    size: 41943040,
+    uploadDate: new Date('2023-12-30'),
+    category: 'Technical Drawings',
+    tags: ['airport', 'terminal', 'structural', 'steel', 'doha', 'dat-2024'],
+    url: 'https://example.com/steel-drawings.dwg',
+    projectId: 'proj-005',
+    projectName: 'Doha Airport Terminal'
+  },
+  {
+    id: '22',
+    name: 'Fire Safety System Design.pdf',
+    type: 'application/pdf',
+    size: 13631488,
+    uploadDate: new Date('2023-12-29'),
+    category: 'Safety Documents',
+    tags: ['fire', 'safety', 'system', 'design', 'airport', 'terminal', 'dat-2024'],
+    url: 'https://example.com/fire-safety.pdf',
+    projectId: 'proj-005',
+    projectName: 'Doha Airport Terminal'
+  },
+  
+  // Abu Dhabi Hospital Project
+  {
+    id: '26',
+    name: 'Hospital Medical Equipment Layout.pdf',
+    type: 'application/pdf',
+    size: 22020096,
+    uploadDate: new Date('2023-12-25'),
+    category: 'Technical Drawings',
+    tags: ['hospital', 'medical', 'equipment', 'layout', 'abu-dhabi', 'adh-2024'],
+    url: 'https://example.com/medical-layout.pdf',
+    projectId: 'proj-006',
+    projectName: 'Abu Dhabi Hospital'
+  },
+  {
+    id: '27',
+    name: 'HVAC System Performance Report.pdf',
+    type: 'application/pdf',
+    size: 11534336,
+    uploadDate: new Date('2023-12-24'),
+    category: 'Reports',
+    tags: ['hvac', 'performance', 'report', 'hospital', 'systems', 'adh-2024'],
+    url: 'https://example.com/hvac-performance.pdf',
+    projectId: 'proj-006',
+    projectName: 'Abu Dhabi Hospital'
+  },
+  
+  // Bahrain Bridge Project
+  {
+    id: '31',
+    name: 'Bridge Design - Cable Stay Analysis.pdf',
+    type: 'application/pdf',
+    size: 28311552,
+    uploadDate: new Date('2023-12-20'),
+    category: 'Technical Drawings',
+    tags: ['bridge', 'cable', 'stay', 'analysis', 'bahrain', 'bbp-2024'],
+    url: 'https://example.com/cable-analysis.pdf',
+    projectId: 'proj-007',
+    projectName: 'Bahrain Bridge Project'
+  },
+  {
+    id: '32',
+    name: 'Marine Environmental Study.pdf',
+    type: 'application/pdf',
+    size: 17825792,
+    uploadDate: new Date('2023-12-19'),
+    category: 'Reports',
+    tags: ['marine', 'environmental', 'study', 'bridge', 'impact', 'bbp-2024'],
+    url: 'https://example.com/marine-study.pdf',
+    projectId: 'proj-007',
+    projectName: 'Bahrain Bridge Project'
+  },
+  
+  // General/Unassigned Documents
   {
     id: '4',
     name: 'Construction Contract - Main Contractor.pdf',
     type: 'application/pdf',
-    size: 3145728, // 3MB
+    size: 3145728,
     uploadDate: new Date('2024-01-17'),
     category: 'Contracts',
     tags: ['contract', 'main-contractor', 'legal', 'construction'],
@@ -64,331 +229,17 @@ const dummyDocuments: Document[] = [
     id: '5',
     name: 'Building Permit - Dubai Municipality.pdf',
     type: 'application/pdf',
-    size: 2097152, // 2MB
+    size: 2097152,
     uploadDate: new Date('2024-01-16'),
     category: 'Permits & Licenses',
     tags: ['permit', 'municipality', 'dubai', 'building'],
     url: 'https://example.com/building-permit.pdf'
   },
-  
-  // Riyadh Business District Project
-  {
-    id: '6',
-    name: 'Riyadh Business District - Feasibility Study.pdf',
-    type: 'application/pdf',
-    size: 12582912, // 12MB
-    uploadDate: new Date('2024-01-15'),
-    category: 'Reports',
-    tags: ['riyadh', 'business-district', 'feasibility', 'commercial'],
-    url: 'https://example.com/feasibility-study.pdf'
-  },
-  {
-    id: '7',
-    name: 'MEP Systems Design - HVAC Layout.pdf',
-    type: 'application/pdf',
-    size: 18874368, // 18MB
-    uploadDate: new Date('2024-01-14'),
-    category: 'Technical Drawings',
-    tags: ['mep', 'hvac', 'mechanical', 'electrical', 'plumbing'],
-    url: 'https://example.com/mep-design.pdf'
-  },
-  {
-    id: '8',
-    name: 'Safety Management Plan.pdf',
-    type: 'application/pdf',
-    size: 5242880, // 5MB
-    uploadDate: new Date('2024-01-13'),
-    category: 'Safety Documents',
-    tags: ['safety', 'management', 'plan', 'construction', 'health'],
-    url: 'https://example.com/safety-plan.pdf'
-  },
-  {
-    id: '9',
-    name: 'Project Budget - Q1 2024.xlsx',
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    size: 1048576, // 1MB
-    uploadDate: new Date('2024-01-12'),
-    category: 'Financial',
-    tags: ['budget', 'financial', 'q1', '2024', 'costs'],
-    url: 'https://example.com/project-budget.xlsx'
-  },
-  {
-    id: '10',
-    name: 'Site Survey Photos - January 2024.zip',
-    type: 'application/zip',
-    size: 52428800, // 50MB
-    uploadDate: new Date('2024-01-11'),
-    category: 'Photos & Media',
-    tags: ['photos', 'site-survey', 'january', 'documentation'],
-    url: 'https://example.com/site-photos.zip'
-  },
-  
-  // Cairo Metro Extension Project
-  {
-    id: '11',
-    name: 'Cairo Metro Line 4 - Environmental Impact Assessment.pdf',
-    type: 'application/pdf',
-    size: 20971520, // 20MB
-    uploadDate: new Date('2024-01-10'),
-    category: 'Reports',
-    tags: ['cairo', 'metro', 'environmental', 'impact', 'assessment'],
-    url: 'https://example.com/environmental-impact.pdf'
-  },
-  {
-    id: '12',
-    name: 'Tunnel Boring Machine Specifications.pdf',
-    type: 'application/pdf',
-    size: 7340032, // 7MB
-    uploadDate: new Date('2024-01-09'),
-    category: 'Specifications',
-    tags: ['tunnel', 'boring', 'machine', 'specifications', 'metro'],
-    url: 'https://example.com/tbm-specs.pdf'
-  },
-  {
-    id: '13',
-    name: 'Geotechnical Investigation Report.pdf',
-    type: 'application/pdf',
-    size: 16777216, // 16MB
-    uploadDate: new Date('2024-01-08'),
-    category: 'Reports',
-    tags: ['geotechnical', 'investigation', 'soil', 'analysis', 'foundation'],
-    url: 'https://example.com/geotechnical-report.pdf'
-  },
-  {
-    id: '14',
-    name: 'Station Design - Architectural Renderings.psd',
-    type: 'image/vnd.adobe.photoshop',
-    size: 104857600, // 100MB
-    uploadDate: new Date('2024-01-07'),
-    category: 'Technical Drawings',
-    tags: ['station', 'design', 'architectural', 'renderings', 'photoshop'],
-    url: 'https://example.com/station-renderings.psd'
-  },
-  {
-    id: '15',
-    name: 'Client Correspondence - Ministry of Transport.pdf',
-    type: 'application/pdf',
-    size: 1572864, // 1.5MB
-    uploadDate: new Date('2024-01-06'),
-    category: 'Correspondence',
-    tags: ['correspondence', 'ministry', 'transport', 'client', 'official'],
-    url: 'https://example.com/ministry-correspondence.pdf'
-  },
-  
-  // Kuwait Oil Refinery Project
-  {
-    id: '16',
-    name: 'Oil Refinery Modernization - Process Flow Diagram.pdf',
-    type: 'application/pdf',
-    size: 31457280, // 30MB
-    uploadDate: new Date('2024-01-05'),
-    category: 'Technical Drawings',
-    tags: ['oil', 'refinery', 'process', 'flow', 'diagram', 'kuwait'],
-    url: 'https://example.com/process-flow.pdf'
-  },
-  {
-    id: '17',
-    name: 'HSE Risk Assessment - Chemical Handling.pdf',
-    type: 'application/pdf',
-    size: 6291456, // 6MB
-    uploadDate: new Date('2024-01-04'),
-    category: 'Safety Documents',
-    tags: ['hse', 'risk', 'assessment', 'chemical', 'handling', 'safety'],
-    url: 'https://example.com/hse-risk-assessment.pdf'
-  },
-  {
-    id: '18',
-    name: 'Equipment Procurement Contract - Pumps & Valves.pdf',
-    type: 'application/pdf',
-    size: 4194304, // 4MB
-    uploadDate: new Date('2024-01-03'),
-    category: 'Contracts',
-    tags: ['procurement', 'equipment', 'pumps', 'valves', 'contract'],
-    url: 'https://example.com/equipment-contract.pdf'
-  },
-  {
-    id: '19',
-    name: 'Quality Control Procedures.pdf',
-    type: 'application/pdf',
-    size: 3670016, // 3.5MB
-    uploadDate: new Date('2024-01-02'),
-    category: 'Specifications',
-    tags: ['quality', 'control', 'procedures', 'standards', 'compliance'],
-    url: 'https://example.com/quality-procedures.pdf'
-  },
-  {
-    id: '20',
-    name: 'Monthly Progress Report - December 2023.pdf',
-    type: 'application/pdf',
-    size: 9437184, // 9MB
-    uploadDate: new Date('2024-01-01'),
-    category: 'Reports',
-    tags: ['progress', 'report', 'monthly', 'december', '2023'],
-    url: 'https://example.com/progress-report.pdf'
-  },
-  
-  // Doha Airport Terminal Project
-  {
-    id: '21',
-    name: 'Airport Terminal - Structural Steel Drawings.dwg',
-    type: 'application/acad',
-    size: 41943040, // 40MB
-    uploadDate: new Date('2023-12-30'),
-    category: 'Technical Drawings',
-    tags: ['airport', 'terminal', 'structural', 'steel', 'doha'],
-    url: 'https://example.com/steel-drawings.dwg'
-  },
-  {
-    id: '22',
-    name: 'Fire Safety System Design.pdf',
-    type: 'application/pdf',
-    size: 13631488, // 13MB
-    uploadDate: new Date('2023-12-29'),
-    category: 'Safety Documents',
-    tags: ['fire', 'safety', 'system', 'design', 'airport', 'terminal'],
-    url: 'https://example.com/fire-safety.pdf'
-  },
-  {
-    id: '23',
-    name: 'Baggage Handling System Specifications.pdf',
-    type: 'application/pdf',
-    size: 8912896, // 8.5MB
-    uploadDate: new Date('2023-12-28'),
-    category: 'Specifications',
-    tags: ['baggage', 'handling', 'system', 'airport', 'specifications'],
-    url: 'https://example.com/baggage-system.pdf'
-  },
-  {
-    id: '24',
-    name: 'Construction Progress Photos - Week 52.zip',
-    type: 'application/zip',
-    size: 73400320, // 70MB
-    uploadDate: new Date('2023-12-27'),
-    category: 'Photos & Media',
-    tags: ['construction', 'progress', 'photos', 'week52', 'documentation'],
-    url: 'https://example.com/progress-photos.zip'
-  },
-  {
-    id: '25',
-    name: 'Change Order #15 - Terminal Expansion.pdf',
-    type: 'application/pdf',
-    size: 2621440, // 2.5MB
-    uploadDate: new Date('2023-12-26'),
-    category: 'Contracts',
-    tags: ['change', 'order', 'terminal', 'expansion', 'contract'],
-    url: 'https://example.com/change-order-15.pdf'
-  },
-  
-  // Abu Dhabi Hospital Project
-  {
-    id: '26',
-    name: 'Hospital Medical Equipment Layout.pdf',
-    type: 'application/pdf',
-    size: 22020096, // 21MB
-    uploadDate: new Date('2023-12-25'),
-    category: 'Technical Drawings',
-    tags: ['hospital', 'medical', 'equipment', 'layout', 'abu-dhabi'],
-    url: 'https://example.com/medical-layout.pdf'
-  },
-  {
-    id: '27',
-    name: 'HVAC System Performance Report.pdf',
-    type: 'application/pdf',
-    size: 11534336, // 11MB
-    uploadDate: new Date('2023-12-24'),
-    category: 'Reports',
-    tags: ['hvac', 'performance', 'report', 'hospital', 'systems'],
-    url: 'https://example.com/hvac-performance.pdf'
-  },
-  {
-    id: '28',
-    name: 'Medical Gas System Certification.pdf',
-    type: 'application/pdf',
-    size: 3932160, // 3.75MB
-    uploadDate: new Date('2023-12-23'),
-    category: 'Permits & Licenses',
-    tags: ['medical', 'gas', 'system', 'certification', 'hospital'],
-    url: 'https://example.com/gas-certification.pdf'
-  },
-  {
-    id: '29',
-    name: 'Project Financial Summary - Q4 2023.xlsx',
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    size: 1310720, // 1.25MB
-    uploadDate: new Date('2023-12-22'),
-    category: 'Financial',
-    tags: ['financial', 'summary', 'q4', '2023', 'hospital'],
-    url: 'https://example.com/financial-summary.xlsx'
-  },
-  {
-    id: '30',
-    name: 'Infection Control Guidelines.pdf',
-    type: 'application/pdf',
-    size: 4718592, // 4.5MB
-    uploadDate: new Date('2023-12-21'),
-    category: 'Safety Documents',
-    tags: ['infection', 'control', 'guidelines', 'hospital', 'safety'],
-    url: 'https://example.com/infection-control.pdf'
-  },
-  
-  // Bahrain Bridge Project
-  {
-    id: '31',
-    name: 'Bridge Design - Cable Stay Analysis.pdf',
-    type: 'application/pdf',
-    size: 28311552, // 27MB
-    uploadDate: new Date('2023-12-20'),
-    category: 'Technical Drawings',
-    tags: ['bridge', 'cable', 'stay', 'analysis', 'bahrain'],
-    url: 'https://example.com/cable-analysis.pdf'
-  },
-  {
-    id: '32',
-    name: 'Marine Environmental Study.pdf',
-    type: 'application/pdf',
-    size: 17825792, // 17MB
-    uploadDate: new Date('2023-12-19'),
-    category: 'Reports',
-    tags: ['marine', 'environmental', 'study', 'bridge', 'impact'],
-    url: 'https://example.com/marine-study.pdf'
-  },
-  {
-    id: '33',
-    name: 'Pile Foundation Installation Procedure.pdf',
-    type: 'application/pdf',
-    size: 6815744, // 6.5MB
-    uploadDate: new Date('2023-12-18'),
-    category: 'Specifications',
-    tags: ['pile', 'foundation', 'installation', 'procedure', 'marine'],
-    url: 'https://example.com/pile-procedure.pdf'
-  },
-  {
-    id: '34',
-    name: 'Navigation Impact Assessment.pdf',
-    type: 'application/pdf',
-    size: 9961472, // 9.5MB
-    uploadDate: new Date('2023-12-17'),
-    category: 'Reports',
-    tags: ['navigation', 'impact', 'assessment', 'marine', 'traffic'],
-    url: 'https://example.com/navigation-impact.pdf'
-  },
-  {
-    id: '35',
-    name: 'Bridge Lighting Design.pdf',
-    type: 'application/pdf',
-    size: 15204352, // 14.5MB
-    uploadDate: new Date('2023-12-16'),
-    category: 'Technical Drawings',
-    tags: ['bridge', 'lighting', 'design', 'electrical', 'aesthetic'],
-    url: 'https://example.com/lighting-design.pdf'
-  },
-  
-  // Additional Documents
   {
     id: '36',
     name: 'Company Safety Manual 2024.pdf',
     type: 'application/pdf',
-    size: 12058624, // 11.5MB
+    size: 12058624,
     uploadDate: new Date('2023-12-15'),
     category: 'Safety Documents',
     tags: ['company', 'safety', 'manual', '2024', 'procedures'],
@@ -398,7 +249,7 @@ const dummyDocuments: Document[] = [
     id: '37',
     name: 'ISO 9001 Certification.pdf',
     type: 'application/pdf',
-    size: 2359296, // 2.25MB
+    size: 2359296,
     uploadDate: new Date('2023-12-14'),
     category: 'Permits & Licenses',
     tags: ['iso', '9001', 'certification', 'quality', 'management'],
@@ -408,31 +259,11 @@ const dummyDocuments: Document[] = [
     id: '38',
     name: 'Annual Financial Report 2023.pdf',
     type: 'application/pdf',
-    size: 8650752, // 8.25MB
+    size: 8650752,
     uploadDate: new Date('2023-12-13'),
     category: 'Financial',
     tags: ['annual', 'financial', 'report', '2023', 'company'],
     url: 'https://example.com/annual-report.pdf'
-  },
-  {
-    id: '39',
-    name: 'BIM Modeling Standards.pdf',
-    type: 'application/pdf',
-    size: 5767168, // 5.5MB
-    uploadDate: new Date('2023-12-12'),
-    category: 'Specifications',
-    tags: ['bim', 'modeling', 'standards', 'guidelines', 'cad'],
-    url: 'https://example.com/bim-standards.pdf'
-  },
-  {
-    id: '40',
-    name: 'Project Portfolio Overview.pptx',
-    type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    size: 45088768, // 43MB
-    uploadDate: new Date('2023-12-11'),
-    category: 'Reports',
-    tags: ['portfolio', 'overview', 'presentation', 'projects', 'company'],
-    url: 'https://example.com/portfolio-overview.pptx'
   }
 ];
 
@@ -442,11 +273,9 @@ export const useDocuments = () => {
 
   // Clear localStorage and force reload dummy data
   useEffect(() => {
-    // Clear any existing data to ensure fresh start
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(CATEGORIES_KEY);
     
-    // Set dummy data immediately
     setDocuments(dummyDocuments);
     setCategories(defaultCategories);
   }, []);
@@ -458,6 +287,12 @@ export const useDocuments = () => {
       count: documents.filter(doc => doc.category === category.name).length
     }));
     setCategories(updatedCategories);
+
+    // Update project document counts
+    projects.forEach(project => {
+      const count = documents.filter(doc => doc.projectId === project.id).length;
+      updateProjectDocumentCount(project.id, count);
+    });
   }, [documents]);
 
   const addDocument = (doc: Omit<Document, 'id' | 'uploadDate'>) => {

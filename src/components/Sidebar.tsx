@@ -1,5 +1,6 @@
 import React from 'react';
 import { Category } from '../types/document';
+import { projects } from '../utils/projectDetection';
 import { 
   Folder, 
   FolderOpen, 
@@ -11,7 +12,8 @@ import {
   Star,
   Clock,
   Share2,
-  Trash2
+  Trash2,
+  Building2
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -44,6 +46,15 @@ const getCategoryIcon = (categoryName: string) => {
       return <Image className="w-4 h-4" />;
     default:
       return <Folder className="w-4 h-4" />;
+  }
+};
+
+const getProjectStatusColor = (status: string) => {
+  switch (status) {
+    case 'active': return 'bg-green-500';
+    case 'completed': return 'bg-blue-500';
+    case 'on-hold': return 'bg-yellow-500';
+    default: return 'bg-gray-500';
   }
 };
 
@@ -122,26 +133,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
             Active Projects
           </h3>
           <div className="space-y-1">
-            <button className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
-              Dubai Marina Tower
-            </button>
-            <button className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-              Riyadh Business District
-            </button>
-            <button className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
-              Cairo Metro Extension
-            </button>
-            <button className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-              <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-              Kuwait Oil Refinery
-            </button>
-            <button className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
-              <div className="w-2 h-2 bg-red-500 rounded-full mr-3"></div>
-              Doha Airport Terminal
-            </button>
+            {projects.filter(p => p.status === 'active').map((project) => (
+              <button
+                key={project.id}
+                className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                title={`${project.name} (${project.code}) - ${project.location}`}
+              >
+                <div className={`w-2 h-2 ${getProjectStatusColor(project.status)} rounded-full mr-3 flex-shrink-0`}></div>
+                <div className="flex-1 text-left min-w-0">
+                  <div className="truncate font-medium">{project.name}</div>
+                  <div className="text-xs text-gray-500 truncate">{project.code}</div>
+                </div>
+                {project.documentCount > 0 && (
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                    {project.documentCount}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
         </div>
 

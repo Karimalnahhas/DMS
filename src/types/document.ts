@@ -8,6 +8,8 @@ export interface Document {
   tags: string[];
   url?: string;
   thumbnail?: string;
+  projectId?: string;
+  projectName?: string;
 }
 
 export interface Category {
@@ -22,4 +24,15 @@ export interface UploadProgress {
   name: string;
   progress: number;
   status: 'uploading' | 'completed' | 'error';
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  code: string;
+  location: string;
+  status: 'active' | 'completed' | 'on-hold';
+  color: string;
+  keywords: string[];
+  documentCount: number;
 }
