@@ -5,7 +5,7 @@ import { DocumentGrid } from './components/DocumentGrid';
 import { UploadModal } from './components/UploadModal';
 import { DocumentViewer } from './components/DocumentViewer';
 import { useDocuments } from './hooks/useDocuments';
-import { getFileCategory } from './utils/fileUtils';
+import { getFileCategory, getCategoryFromFilename } from './utils/fileUtils';
 import { getProjectById, generateProjectTags } from './utils/projectDetection';
 import { Document } from './types/document';
 
@@ -20,7 +20,8 @@ function App() {
   const filteredDocuments = useMemo(() => {
     return documents.filter(doc => {
       const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+                           doc.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                           (doc.projectName && doc.projectName.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesCategory = !selectedCategory || doc.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
@@ -35,6 +36,11 @@ function App() {
       const projectId = projectAssignments[index.toString()];
       const project = projectId ? getProjectById(projectId) : null;
       
+      // Determine category from filename and file type
+      const categoryFromFilename = getCategoryFromFilename(file.name);
+      const categoryFromType = getFileCategory(file.type);
+      const finalCategory = categoryFromFilename !== 'Technical Specifications' ? categoryFromFilename : categoryFromType;
+      
       // Generate tags based on file and project
       let tags: string[] = [];
       
@@ -43,7 +49,7 @@ function App() {
       const basicTags = baseFileName
         .split(/[-_\s]+/)
         .filter(tag => tag.length > 2)
-        .slice(0, 3); // Limit to 3 basic tags
+        .slice(0, 4); // Limit to 4 basic tags
       
       tags.push(...basicTags);
       
@@ -54,23 +60,39 @@ function App() {
       }
       
       // Add category-based tags
-      const category = getFileCategory(file.type);
-      if (category === 'Technical Drawings') {
-        tags.push('cad', 'design');
-      } else if (category === 'Reports') {
-        tags.push('analysis', 'documentation');
-      } else if (category === 'Safety Documents') {
-        tags.push('safety', 'compliance');
+      if (finalCategory === 'Technical Drawings') {
+        tags.push('cad', 'design', 'architectural');
+      } else if (finalCategory === 'Engineering Reports') {
+        tags.push('analysis', 'engineering', 'technical');
+      } else if (finalCategory === 'Safety & HSE Documents') {
+        tags.push('safety', 'hse', 'compliance');
+      } else if (finalCategory === 'Site Photos & Media') {
+        tags.push('site', 'progress', 'visual');
+      } else if (finalCategory === 'Financial & Cost Reports') {
+        tags.push('financial', 'cost', 'budget');
+      }
+      
+      // Add location-based tags if project has location
+      if (project) {
+        const location = project.location.toLowerCase();
+        if (location.includes('dubai')) tags.push('dubai', 'uae');
+        if (location.includes('riyadh')) tags.push('riyadh', 'saudi');
+        if (location.includes('doha')) tags.push('doha', 'qatar');
+        if (location.includes('kuwait')) tags.push('kuwait');
+        if (location.includes('bahrain')) tags.push('bahrain');
+        if (location.includes('cairo')) tags.push('cairo', 'egypt');
+        if (location.includes('amman')) tags.push('amman', 'jordan');
+        if (location.includes('beirut')) tags.push('beirut', 'lebanon');
       }
       
       // Remove duplicates and limit total tags
-      tags = [...new Set(tags)].slice(0, 6);
+      tags = [...new Set(tags)].slice(0, 8);
       
       addDocument({
         name: file.name,
         type: file.type,
         size: file.size,
-        category,
+        category: finalCategory,
         tags,
         url,
         projectId: project?.id,
@@ -107,20 +129,23 @@ function App() {
         <main className="flex-1 overflow-auto">
           <div className="p-8">
             <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
                     {selectedCategory || 'All Documents'}
                   </h1>
-                  <p className="text-gray-600">
-                    {filteredDocuments.length} document{filteredDocuments.length !== 1 ? 's' : ''} found
+                  <p className="text-gray-600 flex items-center space-x-4">
+                    <span>{filteredDocuments.length} document{filteredDocuments.length !== 1 ? 's' : ''} found</span>
+                    {searchTerm && (
+                      <span className="text-blue-600">• Searching for "{searchTerm}"</span>
+                    )}
                   </p>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
                     Sort by: Date Modified
                   </button>
-                  <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
                     Filter
                   </button>
                 </div>
