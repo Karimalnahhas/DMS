@@ -437,55 +437,28 @@ const dummyDocuments: Document[] = [
 ];
 
 export const useDocuments = () => {
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<Document[]>(dummyDocuments);
   const [categories, setCategories] = useState<Category[]>(defaultCategories);
 
+  // Clear localStorage and force reload dummy data
   useEffect(() => {
-    const savedDocs = localStorage.getItem(STORAGE_KEY);
-    const savedCategories = localStorage.getItem(CATEGORIES_KEY);
+    // Clear any existing data to ensure fresh start
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(CATEGORIES_KEY);
     
-    if (savedDocs) {
-      try {
-        const parsedDocs = JSON.parse(savedDocs).map((doc: any) => ({
-          ...doc,
-          uploadDate: new Date(doc.uploadDate)
-        }));
-        setDocuments(parsedDocs);
-      } catch (error) {
-        console.error('Error parsing saved documents:', error);
-        // Fallback to dummy data if parsing fails
-        setDocuments(dummyDocuments);
-      }
-    } else {
-      // Load dummy data if no saved documents exist
-      setDocuments(dummyDocuments);
-    }
-    
-    if (savedCategories) {
-      try {
-        setCategories(JSON.parse(savedCategories));
-      } catch (error) {
-        console.error('Error parsing saved categories:', error);
-        setCategories(defaultCategories);
-      }
-    }
+    // Set dummy data immediately
+    setDocuments(dummyDocuments);
+    setCategories(defaultCategories);
   }, []);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(documents));
-      
-      // Update category counts
-      const updatedCategories = categories.map(category => ({
-        ...category,
-        count: documents.filter(doc => doc.category === category.name).length
-      }));
-      setCategories(updatedCategories);
-      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(updatedCategories));
-    } catch (error) {
-      console.error('Error saving to localStorage:', error);
-    }
-  }, [documents, categories]);
+    // Update category counts whenever documents change
+    const updatedCategories = defaultCategories.map(category => ({
+      ...category,
+      count: documents.filter(doc => doc.category === category.name).length
+    }));
+    setCategories(updatedCategories);
+  }, [documents]);
 
   const addDocument = (doc: Omit<Document, 'id' | 'uploadDate'>) => {
     const newDoc: Document = {
