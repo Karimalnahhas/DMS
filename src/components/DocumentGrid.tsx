@@ -7,6 +7,7 @@ interface DocumentGridProps {
   documents: Document[];
   onDocumentDelete: (id: string) => void;
   onDocumentUpdate: (id: string, updates: Partial<Document>) => void;
+  onDocumentClick: (document: Document) => void;
   viewMode: 'grid' | 'list';
 }
 
@@ -14,6 +15,7 @@ export const DocumentGrid: React.FC<DocumentGridProps> = ({
   documents,
   onDocumentDelete,
   onDocumentUpdate,
+  onDocumentClick,
   viewMode,
 }) => {
   if (documents.length === 0) {
@@ -51,6 +53,7 @@ export const DocumentGrid: React.FC<DocumentGridProps> = ({
               document={document}
               onDelete={onDocumentDelete}
               onUpdate={onDocumentUpdate}
+              onClick={onDocumentClick}
             />
           ))}
         </div>
@@ -66,6 +69,7 @@ export const DocumentGrid: React.FC<DocumentGridProps> = ({
           document={document}
           onDelete={onDocumentDelete}
           onUpdate={onDocumentUpdate}
+          onClick={onDocumentClick}
         />
       ))}
     </div>

@@ -8,12 +8,14 @@ interface DocumentListItemProps {
   document: Document;
   onDelete: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Document>) => void;
+  onClick: (document: Document) => void;
 }
 
 export const DocumentListItem: React.FC<DocumentListItemProps> = ({
   document,
   onDelete,
   onUpdate,
+  onClick,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -35,8 +37,22 @@ export const DocumentListItem: React.FC<DocumentListItemProps> = ({
     }
   };
 
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Don't trigger onClick if clicking on menu or editing
+    if (showMenu || isEditing) return;
+    
+    // Don't trigger if clicking on interactive elements
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('input')) return;
+    
+    onClick(document);
+  };
+
   return (
-    <div className="group px-6 py-4 hover:bg-gray-50 transition-colors">
+    <div 
+      className="group px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
+      onClick={handleRowClick}
+    >
       <div className="grid grid-cols-12 gap-4 items-center">
         <div className="col-span-5 flex items-center space-x-3">
           <div className="text-lg">{getFileIcon(document.type)}</div>
@@ -48,6 +64,7 @@ export const DocumentListItem: React.FC<DocumentListItemProps> = ({
                 onChange={(e) => setEditName(e.target.value)}
                 onBlur={handleSaveEdit}
                 onKeyDown={handleKeyPress}
+                onClick={(e) => e.stopPropagation()}
                 className="w-full text-sm font-medium text-gray-900 bg-gray-50 border border-gray-300 rounded-md px-2 py-1"
                 autoFocus
               />
@@ -97,7 +114,10 @@ export const DocumentListItem: React.FC<DocumentListItemProps> = ({
         <div className="col-span-1 flex justify-end">
           <div className="opacity-0 group-hover:opacity-100 transition-opacity relative">
             <button
-              onClick={() => setShowMenu(!showMenu)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(!showMenu);
+              }}
               className="p-1 rounded-md hover:bg-gray-200 text-gray-400 hover:text-gray-600"
             >
               <MoreVertical className="w-4 h-4" />
@@ -106,19 +126,19 @@ export const DocumentListItem: React.FC<DocumentListItemProps> = ({
             {showMenu && (
               <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-40 py-1">
                 <button
-                  onClick={() => {
-                    if (document.url) {
-                      window.open(document.url, '_blank');
-                    }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClick(document);
                     setShowMenu(false);
                   }}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center text-gray-700"
                 >
                   <Eye className="w-4 h-4 mr-2" />
-                  Preview
+                  Open
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setIsEditing(true);
                     setShowMenu(false);
                   }}
@@ -128,7 +148,8 @@ export const DocumentListItem: React.FC<DocumentListItemProps> = ({
                   Rename
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     // In a real app, this would trigger a download
                     setShowMenu(false);
                   }}
@@ -138,7 +159,8 @@ export const DocumentListItem: React.FC<DocumentListItemProps> = ({
                   Download
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     // Toggle favorite
                     setShowMenu(false);
                   }}
@@ -149,7 +171,8 @@ export const DocumentListItem: React.FC<DocumentListItemProps> = ({
                 </button>
                 <hr className="my-1" />
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onDelete(document.id);
                     setShowMenu(false);
                   }}

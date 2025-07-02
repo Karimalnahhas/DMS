@@ -8,12 +8,14 @@ interface DocumentCardProps {
   document: Document;
   onDelete: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Document>) => void;
+  onClick: (document: Document) => void;
 }
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({
   document,
   onDelete,
   onUpdate,
+  onClick,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -35,14 +37,31 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't trigger onClick if clicking on menu or editing
+    if (showMenu || isEditing) return;
+    
+    // Don't trigger if clicking on interactive elements
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('input')) return;
+    
+    onClick(document);
+  };
+
   return (
-    <div className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 overflow-hidden">
+    <div 
+      className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 overflow-hidden cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="text-3xl">{getFileIcon(document.type)}</div>
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity relative">
             <button
-              onClick={() => setShowMenu(!showMenu)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(!showMenu);
+              }}
               className="p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600"
             >
               <MoreVertical className="w-4 h-4" />
@@ -51,19 +70,19 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             {showMenu && (
               <div className="absolute right-2 top-12 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-40 py-1">
                 <button
-                  onClick={() => {
-                    if (document.url) {
-                      window.open(document.url, '_blank');
-                    }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClick(document);
                     setShowMenu(false);
                   }}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center text-gray-700"
                 >
                   <Eye className="w-4 h-4 mr-2" />
-                  Preview
+                  Open
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setIsEditing(true);
                     setShowMenu(false);
                   }}
@@ -73,7 +92,8 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                   Rename
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     // In a real app, this would trigger a download
                     setShowMenu(false);
                   }}
@@ -83,7 +103,8 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                   Download
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     // Toggle favorite
                     setShowMenu(false);
                   }}
@@ -94,7 +115,8 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                 </button>
                 <hr className="my-1" />
                 <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     onDelete(document.id);
                     setShowMenu(false);
                   }}
@@ -116,6 +138,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
               onChange={(e) => setEditName(e.target.value)}
               onBlur={handleSaveEdit}
               onKeyDown={handleKeyPress}
+              onClick={(e) => e.stopPropagation()}
               className="w-full text-sm font-medium text-gray-900 bg-gray-50 border border-gray-300 rounded-md px-2 py-1"
               autoFocus
             />

@@ -3,8 +3,10 @@ import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { DocumentGrid } from './components/DocumentGrid';
 import { UploadModal } from './components/UploadModal';
+import { DocumentViewer } from './components/DocumentViewer';
 import { useDocuments } from './hooks/useDocuments';
 import { getFileCategory } from './utils/fileUtils';
+import { Document } from './types/document';
 
 function App() {
   const { documents, categories, addDocument, deleteDocument, updateDocument } = useDocuments();
@@ -12,6 +14,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
 
   const filteredDocuments = useMemo(() => {
     return documents.filter(doc => {
@@ -36,6 +39,14 @@ function App() {
         url,
       });
     });
+  };
+
+  const handleDocumentClick = (document: Document) => {
+    setSelectedDocument(document);
+  };
+
+  const handleCloseViewer = () => {
+    setSelectedDocument(null);
   };
 
   return (
@@ -82,6 +93,7 @@ function App() {
               documents={filteredDocuments}
               onDocumentDelete={deleteDocument}
               onDocumentUpdate={updateDocument}
+              onDocumentClick={handleDocumentClick}
               viewMode={viewMode}
             />
           </div>
@@ -92,6 +104,11 @@ function App() {
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         onUpload={handleFileUpload}
+      />
+
+      <DocumentViewer
+        document={selectedDocument}
+        onClose={handleCloseViewer}
       />
     </div>
   );
