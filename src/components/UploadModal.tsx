@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Upload, File } from 'lucide-react';
+import { X, Upload, File, Cloud } from 'lucide-react';
 import { formatFileSize, getFileCategory } from '../utils/fileUtils';
 
 interface UploadModalProps {
@@ -60,99 +60,129 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Upload Documents</h2>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div
-          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-            dragActive
-              ? 'border-primary-500 bg-primary-50'
-              : 'border-gray-300 hover:border-gray-400'
-          }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-        >
-          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 mb-2">
-            Drag and drop files here, or{' '}
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="text-primary-600 hover:text-primary-700 font-medium"
-            >
-              browse
-            </button>
-          </p>
-          <p className="text-sm text-gray-500">
-            Support for all file types up to 10MB
-          </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-        </div>
-
-        {selectedFiles.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-sm font-medium text-gray-900 mb-2">
-              Selected Files ({selectedFiles.length})
-            </h3>
-            <div className="space-y-2 max-h-32 overflow-y-auto">
-              {selectedFiles.map((file, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-2 bg-gray-50 rounded"
-                >
-                  <div className="flex items-center space-x-2">
-                    <File className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {file.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {formatFileSize(file.size)} • {getFileCategory(file.type)}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => removeFile(index)}
-                    className="p-1 hover:bg-gray-200 rounded"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Upload Documents</h2>
+            <p className="text-sm text-gray-600 mt-1">Add files to your document library</p>
           </div>
-        )}
-
-        <div className="flex space-x-3 mt-6">
           <button
             onClick={onClose}
-            className="btn-outline flex-1 py-2"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            Cancel
+            <X className="w-5 h-5 text-gray-500" />
           </button>
-          <button
-            onClick={handleUpload}
-            disabled={selectedFiles.length === 0}
-            className="btn-primary flex-1 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        </div>
+
+        <div className="p-6">
+          <div
+            className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${
+              dragActive
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-300 hover:border-gray-400'
+            }`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
           >
-            Upload {selectedFiles.length > 0 && `(${selectedFiles.length})`}
-          </button>
+            <div className="flex flex-col items-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <Cloud className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Drop files here to upload
+              </h3>
+              <p className="text-gray-600 mb-4">
+                or{' '}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  browse from your computer
+                </button>
+              </p>
+              <p className="text-sm text-gray-500">
+                Supports all file types up to 100MB each
+              </p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </div>
+
+          {selectedFiles.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-gray-900 mb-4">
+                Selected Files ({selectedFiles.length})
+              </h3>
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {selectedFiles.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                  >
+                    <div className="flex items-center space-x-3 min-w-0 flex-1">
+                      <File className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {file.name}
+                        </p>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="text-xs text-gray-500">
+                            {formatFileSize(file.size)}
+                          </span>
+                          <span className="text-xs text-gray-400">•</span>
+                          <span className="text-xs text-blue-600 font-medium">
+                            {getFileCategory(file.type)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="p-1 hover:bg-gray-200 rounded-md transition-colors flex-shrink-0"
+                    >
+                      <X className="w-4 h-4 text-gray-500" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+          <div className="text-sm text-gray-600">
+            {selectedFiles.length > 0 && (
+              <span>
+                {selectedFiles.length} file{selectedFiles.length !== 1 ? 's' : ''} selected
+              </span>
+            )}
+          </div>
+          <div className="flex space-x-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleUpload}
+              disabled={selectedFiles.length === 0}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              <Upload className="w-4 h-4" />
+              <span>
+                Upload {selectedFiles.length > 0 && `(${selectedFiles.length})`}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

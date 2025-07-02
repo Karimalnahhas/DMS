@@ -4,13 +4,13 @@ import { formatFileSize, getFileIcon } from '../utils/fileUtils';
 import { format } from 'date-fns';
 import { MoreVertical, Download, Trash2, Edit, Eye, Star } from 'lucide-react';
 
-interface DocumentCardProps {
+interface DocumentListItemProps {
   document: Document;
   onDelete: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Document>) => void;
 }
 
-export const DocumentCard: React.FC<DocumentCardProps> = ({
+export const DocumentListItem: React.FC<DocumentListItemProps> = ({
   document,
   onDelete,
   onUpdate,
@@ -36,20 +36,75 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
   };
 
   return (
-    <div className="group bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 overflow-hidden">
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="text-3xl">{getFileIcon(document.type)}</div>
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+    <div className="group px-6 py-4 hover:bg-gray-50 transition-colors">
+      <div className="grid grid-cols-12 gap-4 items-center">
+        <div className="col-span-5 flex items-center space-x-3">
+          <div className="text-lg">{getFileIcon(document.type)}</div>
+          <div className="min-w-0 flex-1">
+            {isEditing ? (
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onBlur={handleSaveEdit}
+                onKeyDown={handleKeyPress}
+                className="w-full text-sm font-medium text-gray-900 bg-gray-50 border border-gray-300 rounded-md px-2 py-1"
+                autoFocus
+              />
+            ) : (
+              <div>
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {document.name}
+                </p>
+                {document.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {document.tags.slice(0, 3).map((tag, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {document.tags.length > 3 && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600">
+                        +{document.tags.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="col-span-2">
+          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+            {document.category}
+          </span>
+        </div>
+        
+        <div className="col-span-2">
+          <span className="text-sm text-gray-600">{formatFileSize(document.size)}</span>
+        </div>
+        
+        <div className="col-span-2">
+          <span className="text-sm text-gray-600">
+            {format(document.uploadDate, 'MMM d, yyyy')}
+          </span>
+        </div>
+        
+        <div className="col-span-1 flex justify-end">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className="p-1 rounded-md hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+              className="p-1 rounded-md hover:bg-gray-200 text-gray-400 hover:text-gray-600"
             >
               <MoreVertical className="w-4 h-4" />
             </button>
             
             {showMenu && (
-              <div className="absolute right-2 top-12 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-40 py-1">
+              <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-40 py-1">
                 <button
                   onClick={() => {
                     if (document.url) {
@@ -106,53 +161,6 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
               </div>
             )}
           </div>
-        </div>
-        
-        <div className="space-y-3">
-          {isEditing ? (
-            <input
-              type="text"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              onBlur={handleSaveEdit}
-              onKeyDown={handleKeyPress}
-              className="w-full text-sm font-medium text-gray-900 bg-gray-50 border border-gray-300 rounded-md px-2 py-1"
-              autoFocus
-            />
-          ) : (
-            <h3 className="text-sm font-medium text-gray-900 line-clamp-2 leading-5">
-              {document.name}
-            </h3>
-          )}
-          
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>{formatFileSize(document.size)}</span>
-            <span>{format(document.uploadDate, 'MMM d, yyyy')}</span>
-          </div>
-          
-          <div className="flex flex-wrap gap-1">
-            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-              {document.category}
-            </span>
-          </div>
-          
-          {document.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {document.tags.slice(0, 2).map((tag, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-600"
-                >
-                  {tag}
-                </span>
-              ))}
-              {document.tags.length > 2 && (
-                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-600">
-                  +{document.tags.length - 2}
-                </span>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </div>

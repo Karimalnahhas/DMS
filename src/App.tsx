@@ -39,7 +39,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       <Header
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -48,28 +48,43 @@ function App() {
         onUploadClick={() => setIsUploadModalOpen(true)}
       />
       
-      <div className="flex">
+      <div className="flex h-[calc(100vh-64px)]">
         <Sidebar
           categories={categories}
           selectedCategory={selectedCategory}
           onCategorySelect={setSelectedCategory}
         />
         
-        <main className="flex-1 p-6">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              {selectedCategory || 'All Documents'}
-            </h2>
-            <p className="text-gray-600">
-              {filteredDocuments.length} document{filteredDocuments.length !== 1 ? 's' : ''} found
-            </p>
+        <main className="flex-1 overflow-auto">
+          <div className="p-8">
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    {selectedCategory || 'All Documents'}
+                  </h1>
+                  <p className="text-gray-600">
+                    {filteredDocuments.length} document{filteredDocuments.length !== 1 ? 's' : ''} found
+                  </p>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Sort by: Date Modified
+                  </button>
+                  <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Filter
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <DocumentGrid
+              documents={filteredDocuments}
+              onDocumentDelete={deleteDocument}
+              onDocumentUpdate={updateDocument}
+              viewMode={viewMode}
+            />
           </div>
-          
-          <DocumentGrid
-            documents={filteredDocuments}
-            onDocumentDelete={deleteDocument}
-            onDocumentUpdate={updateDocument}
-          />
         </main>
       </div>
       
